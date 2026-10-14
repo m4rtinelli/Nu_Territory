@@ -1,0 +1,62 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* shadcn/ui theme tokens, tuned to Nubank: Nu purple #820AD1 on true black. Single dark theme by design. */
+@layer base {
+  :root {
+    --background: 0 0% 0%;
+    --foreground: 270 20% 97%;
+    --card: 270 18% 5%;
+    --card-foreground: 270 20% 97%;
+    --popover: 270 16% 7%;
+    --popover-foreground: 270 20% 97%;
+    --primary: 276 91% 43%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 270 12% 12%;
+    --secondary-foreground: 270 20% 97%;
+    --muted: 270 12% 10%;
+    --muted-foreground: 270 7% 63%;
+    --accent: 270 14% 15%;
+    --accent-foreground: 270 20% 97%;
+    --border: 270 14% 16%;
+    --input: 270 14% 18%;
+    --ring: 274 100% 71%;
+    --radius: 0.75rem;
+    --nu: 276 91% 43%;
+    --nu-light: 274 100% 71%;
+    --bank: 266 50% 86%;
+    --manager: 275 70% 59%;
+    --positive: 150 45% 70%;
+    --opportunity: 28 80% 71%;
+    color-scheme: dark;
+  }
+  * { @apply border-border; }
+  html, body, #root { height: 100%; }
+  body {
+    @apply bg-background text-foreground font-sans antialiased overflow-hidden;
+  }
+}
+
+@layer components {
+  .glass { @apply bg-card/70 backdrop-blur-xl backdrop-saturate-150; }
+  .scene-label {
+    position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none;
+    font-size: 11px; letter-spacing: .01em; color: hsl(var(--muted-foreground));
+    transform: translate(-9999px, 0); transition: color .2s, opacity .3s; will-change: transform;
+  }
+  .scene-label[data-cat="nu"] { color: hsl(var(--nu-light)); font-weight: 500; }
+  .scene-label[data-cat="ideal"] { color: hsl(var(--foreground)); font-weight: 500; }
+  .scene-label[data-state="hot"], .scene-label[data-state="sel"] { color: hsl(var(--foreground)); }
+  .scene-label[data-dim="true"] { opacity: .18; }
+  .scene-axis {
+    position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none;
+    font-size: 10px; letter-spacing: .14em; text-transform: uppercase; color: hsl(270 6% 40%);
+    transform: translate(-9999px, 0); transition: opacity .3s;
+  }
+  .scene-axis[data-depth="true"] { color: hsl(272 25% 45%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0ms !important; transition-duration: 0ms !important; }
+}

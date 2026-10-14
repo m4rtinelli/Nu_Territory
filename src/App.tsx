@@ -25,6 +25,11 @@ const RANKED = BRANDS.filter((b) => b.cat !== "ideal").sort((a, b) => dist(a) - 
 const CAT_DOT: Record<Brand["cat"], string> = { bank: "bg-bank", manager: "bg-manager", nu: "bg-nu-light", ideal: "bg-foreground" }
 const fmt = (v: number) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2)
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
+// URL hash per brand (letters, digits and dashes only, so it survives the artifact viewer)
+const slug = (id: string) => norm(id).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
+const BY_SLUG = new Map(BRANDS.map((b) => [slug(b.id), b.id]))
+const fromHash = () => BY_SLUG.get(decodeURIComponent(location.hash.slice(1))) ?? null
+const urlWithout = () => location.pathname + location.search
 
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(() => innerWidth < 720)
@@ -41,7 +46,29 @@ export default function App() {
   const labelsRef = useRef<HTMLDivElement>(null)
   const tipRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<PositioningScene | null>(null)
-  const [selected, setSelected] = useState<string | null>(null)
+  const [selected, setSelected] = useState<string | null>(fromHash)
+
+  // Selection lives in the browser history: opening a brand from the closed state pushes one entry,
+  // moving between brands replaces it, so Back (button or gesture) always closes the panel.
+  const open = (id: string) => {
+    const url = `#${slug(id)}`
+    if (history.state?.nuPanel) history.replaceState({ nuPanel: true }, "", url)
+    else history.pushState({ nuPanel: true }, "", url)
+    setSelected(id)
+  }
+  const leaving = useRef(false) // Esc, X and canvas clicks can all fire together: go back only once
+  const close = () => {
+    if (leaving.current) return
+    if (history.state?.nuPanel) { leaving.current = true; history.back() } // popstate clears the selection
+    else { history.replaceState(null, "", urlWithout()); setSelected(null) }
+  }
+  const openRef = useRef(open); openRef.current = open
+  const closeRef = useRef(close); closeRef.current = close
+  useEffect(() => {
+    const onPop = () => { leaving.current = false; setSelected(fromHash()) }
+    addEventListener("popstate", onPop)
+    return () => removeEventListener("popstate", onPop)
+  }, [])
   const [projection, setProjection] = useState<Projection>("3d")
   const [look, setLook] = useState<Look>("dots")
   const [layout, setLayout] = useState<Layout>("map")
@@ -50,7 +77,7 @@ export default function App() {
   const narrow = useIsNarrow()
 
   useEffect(() => {
-    const s = new PositioningScene(stageRef.current!, labelsRef.current!, tipRef.current!, BRANDS, LOGOS, { onSelect: setSelected })
+    const s = new PositioningScene(stageRef.current!, labelsRef.current!, tipRef.current!, BRANDS, LOGOS, { onSelect: (id) => (id ? openRef.current(id) : closeRef.current()) })
     sceneRef.current = s
     return () => s.dispose()
   }, [])
@@ -65,14 +92,13 @@ export default function App() {
 
   const step = (dir: number) => {
     const i = selected ? ORDER.findIndex((b) => b.id === selected) : -1
-    setSelected(ORDER[(i + dir + ORDER.length) % ORDER.length].id)
+    open(ORDER[(i + dir + ORDER.length) % ORDER.length].id)
   }
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.target as HTMLElement).closest("input, [cmdk-root]")) return
       if (e.key === "ArrowRight") step(1)
       if (e.key === "ArrowLeft") step(-1)
-      if (e.key === "Escape") setSelected(null)
       if (e.key === "/" || (e.key === "k" && (e.metaKey || e.ctrlKey))) { e.preventDefault(); setSearchOpen(true) }
     }
     addEventListener("keydown", onKey)
@@ -115,14 +141,14 @@ export default function App() {
         layout={layout} setLayout={setLayout}
         filter={filter} setFilter={setFilter}
         searchOpen={searchOpen} setSearchOpen={setSearchOpen}
-        onPick={(id) => { setSelected(id); setSearchOpen(false) }}
+        onPick={(id) => { open(id); setSearchOpen(false) }}
       />
 
       <p className="fixed bottom-[calc(26px+env(safe-area-inset-bottom,0px))] left-[max(28px,env(safe-area-inset-left,0px))] z-10 hidden text-[11px] text-muted-foreground/60 lg:block">
         {layout === "gallery" ? "Galeria ordenada de complexo para simples" : projection === "3d" ? "Arraste para girar · role para aproximar · ← → navega" : "Vista frontal, idêntica ao slide 149"}
       </p>
 
-      <Sheet open={!!brand} onOpenChange={(o) => !o && setSelected(null)} modal={false}>
+      <Sheet open={!!brand} onOpenChange={(o) => !o && close()} modal={false}>
         <SheetContent
           side={narrow ? "bottom" : "right"}
           onInteractOutside={(e) => e.preventDefault()}

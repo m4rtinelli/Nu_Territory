@@ -51,7 +51,11 @@ export class PositioningScene {
   private axes: { el: HTMLDivElement; p: THREE.Vector3; align: "l" | "c" | "r"; depth?: boolean; follow?: string }[] = []
   private chartMats: { mat: THREE.LineBasicMaterial; base: number; depth?: boolean }[] = []
   private gapLine: THREE.Line
+  // Preallocated once and updated in place: replacing attributes every frame leaks GPU buffers
+  // (the old ones are never deleted), which ends in a lost WebGL context and a black canvas.
   private gapGeo = new THREE.BufferGeometry()
+    .setAttribute("position", new THREE.Float32BufferAttribute(new Float32Array(6), 3))
+    .setAttribute("lineDistance", new THREE.Float32BufferAttribute(new Float32Array(2), 1))
   private ray = new THREE.Raycaster()
   private ndc = new THREE.Vector2()
   private tmp = new THREE.Vector3()
@@ -542,7 +546,11 @@ export class PositioningScene {
     }
 
     const a = this.byId.get("Nu Asset hoje")!.group.position, b = this.byId.get("Nu Asset ideal")!.group.position
-    this.gapGeo.setFromPoints([a.clone(), b.clone()]); this.gapLine.computeLineDistances()
+    const gp = this.gapGeo.attributes.position as THREE.BufferAttribute
+    gp.setXYZ(0, a.x, a.y, a.z); gp.setXYZ(1, b.x, b.y, b.z); gp.needsUpdate = true
+    const gd = this.gapGeo.attributes.lineDistance as THREE.BufferAttribute
+    gd.setX(0, 0); gd.setX(1, a.distanceTo(b)); gd.needsUpdate = true
+    this.gapGeo.computeBoundingSphere()
     ;(this.gapLine.material as THREE.LineDashedMaterial).opacity = 0.75 * chartVis
     this.gapLine.visible = chartVis > 0.004
 

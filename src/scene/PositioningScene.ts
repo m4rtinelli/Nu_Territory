@@ -102,9 +102,28 @@ export class PositioningScene {
     this.buildAxes()
     this.bindInput()
     this.resize()
+    // Redraw whenever the browser may have discarded the last frame: resize (window or the viewer's
+    // iframe), tab shown again, page restored from cache, or a lost WebGL context coming back.
     const onResize = () => this.resize()
+    const redraw = () => { this.lastT = 0; this.invalidate() }
+    const onVisible = () => { if (document.visibilityState === "visible") redraw() }
+    const cvs = this.renderer.domElement
+    const onLost = (e: Event) => e.preventDefault()
     addEventListener("resize", onResize)
-    this.disposers.push(() => removeEventListener("resize", onResize))
+    addEventListener("pageshow", redraw)
+    document.addEventListener("visibilitychange", onVisible)
+    cvs.addEventListener("webglcontextlost", onLost)
+    cvs.addEventListener("webglcontextrestored", redraw)
+    const ro = new ResizeObserver(onResize)
+    ro.observe(host)
+    this.disposers.push(() => {
+      removeEventListener("resize", onResize)
+      removeEventListener("pageshow", redraw)
+      document.removeEventListener("visibilitychange", onVisible)
+      cvs.removeEventListener("webglcontextlost", onLost)
+      cvs.removeEventListener("webglcontextrestored", redraw)
+      ro.disconnect()
+    })
     this.invalidate()
   }
 
@@ -388,17 +407,19 @@ export class PositioningScene {
   private focus(n: Node) {
     const p = this.nodePosition(n, this.tDepth, this.tLayout)
     this.rig.tR = this.tLayout ? 13 : innerWidth < 720 ? 11 : 10
-    const unitsPerPx = (2 * this.rig.tR * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) / innerHeight
+    const unitsPerPx = innerHeight ? (2 * this.rig.tR * Math.tan(THREE.MathUtils.degToRad(this.camera.fov / 2))) / innerHeight : 0
     const shift = (this.panelPx / 2) * unitsPerPx
     const th = this.rig.tTheta
     this.rig.tTarget.set(p.x + Math.cos(th) * shift, p.y, p.z - Math.sin(th) * shift)
   }
   private baseR() {
+    if (!innerWidth || !innerHeight) return 20
     const a = innerWidth / innerHeight, t = Math.tan(THREE.MathUtils.degToRad(17))
     const w = this.tLayout ? 20 : W + 3.2, h = this.tLayout ? 7.5 : H + 2.4
     return clamp(Math.max(h / 2 / t, w / 2 / t / a), 12, 60)
   }
   private resize() {
+    if (!innerWidth || !innerHeight) return // hidden iframe: keep the last good size
     this.renderer.setSize(innerWidth, innerHeight, false)
     this.camera.aspect = innerWidth / innerHeight
     this.camera.updateProjectionMatrix()
@@ -429,6 +450,15 @@ export class PositioningScene {
     this.depthMorph = approach(this.depthMorph, this.tDepth, k)
     this.lookMorph = approach(this.lookMorph, this.tLook, k)
     this.layoutMorph = approach(this.layoutMorph, this.tLayout, k)
+
+    // never let a bad value (e.g. a zero-size viewport) poison the eased camera for good
+    const finite = [r.theta, r.phi, r.r, r.target.x, r.target.y, r.target.z, r.tTheta, r.tPhi, r.tR, r.tTarget.x, r.tTarget.y, r.tTarget.z].every(Number.isFinite)
+    if (!finite) {
+      r.theta = r.tTheta = this.layout === "gallery" || this.projection === "2d" ? 0 : 0.42
+      r.phi = r.tPhi = this.layout === "gallery" ? 0.04 : this.projection === "2d" ? 0 : 0.2
+      r.r = r.tR = this.baseR()
+      r.target.set(0, 0, 0); r.tTarget.set(0, 0, 0)
+    }
 
     const cam = this.camera
     cam.position.set(

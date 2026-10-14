@@ -48,26 +48,26 @@ export default function App() {
   const sceneRef = useRef<PositioningScene | null>(null)
   const [selected, setSelected] = useState<string | null>(fromHash)
 
-  // Selection lives in the browser history: opening a brand from the closed state pushes one entry,
-  // moving between brands replaces it, so Back (button or gesture) always closes the panel.
+  // Selection lives in the URL hash: opening a brand from the closed state pushes one entry and moving
+  // between brands replaces it, so Back closes the panel. Closing never calls history.back(): inside the
+  // artifact viewer the joint history also holds the host page's entries, and going back could navigate it.
   const open = (id: string) => {
     const url = `#${slug(id)}`
     if (history.state?.nuPanel) history.replaceState({ nuPanel: true }, "", url)
     else history.pushState({ nuPanel: true }, "", url)
     setSelected(id)
   }
-  const leaving = useRef(false) // Esc, X and canvas clicks can all fire together: go back only once
   const close = () => {
-    if (leaving.current) return
-    if (history.state?.nuPanel) { leaving.current = true; history.back() } // popstate clears the selection
-    else { history.replaceState(null, "", urlWithout()); setSelected(null) }
+    if (location.hash) history.replaceState(null, "", urlWithout())
+    setSelected(null)
   }
   const openRef = useRef(open); openRef.current = open
   const closeRef = useRef(close); closeRef.current = close
   useEffect(() => {
-    const onPop = () => { leaving.current = false; setSelected(fromHash()) }
-    addEventListener("popstate", onPop)
-    return () => removeEventListener("popstate", onPop)
+    const sync = () => setSelected(fromHash())
+    addEventListener("popstate", sync)
+    addEventListener("hashchange", sync)
+    return () => { removeEventListener("popstate", sync); removeEventListener("hashchange", sync) }
   }, [])
   const [projection, setProjection] = useState<Projection>("3d")
   const [look, setLook] = useState<Look>("dots")

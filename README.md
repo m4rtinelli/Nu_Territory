@@ -23,6 +23,11 @@ The scene renders on demand: with no input it draws nothing and stays still.
 React 18 · TypeScript · Vite · Tailwind CSS · [shadcn/ui](https://ui.shadcn.com) (new-york style, components in `src/components/ui`) · three.js.
 Theme tokens live in `src/index.css` (Nu purple `#820AD1` on black).
 
+## Typeface
+
+The UI is set in **Nu Sans Text** (Nubank, Regular cut only; hierarchy comes from size and tracking, `font-synthesis: none` prevents fake bold).
+The font file is proprietary and is **not committed**. Place it at `public/fonts/NuSansText-Regular.woff2` before running; without it the page falls back to the system sans.
+
 ```bash
 npm install
 npm run dev     # local dev server

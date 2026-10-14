@@ -99,7 +99,7 @@ export default function App() {
         }}
       >
         <p className="text-[11px] uppercase tracking-[0.16em] text-nu-light">Competitive Positioning Framework</p>
-        <h1 className="mt-2.5 text-balance font-display text-[clamp(22px,2.6vw,34px)] font-semibold leading-[1.12] tracking-[-0.022em]">
+        <h1 className="mt-2.5 text-balance font-display text-[clamp(24px,2.8vw,38px)] font-normal leading-[1.08] tracking-[-0.03em]">
           A Nu Asset pode ocupar a sofisticação com <span className="text-nu-light">simplicidade</span>
         </h1>
         <p className="mt-2 hidden max-w-[46ch] text-[13px] leading-relaxed text-muted-foreground md:block">
@@ -153,7 +153,7 @@ function Legend({ look, hidden }: { look: Look; hidden: boolean }) {
       ) : (
         <>
           <span className="flex items-center gap-2"><i className="h-3 w-3 rounded-[4px] border border-nu-light" />Ecossistema Nu</span>
-          <span className="flex items-center gap-2"><i className="grid h-3 w-3 place-items-center rounded-[4px] bg-secondary text-[7px] font-semibold text-foreground">A</i>Monograma: logo pendente</span>
+          <span className="flex items-center gap-2"><i className="grid h-3 w-3 place-items-center rounded-[4px] bg-secondary text-[7px] font-normal text-foreground">A</i>Monograma: logo pendente</span>
         </>
       )}
       <span className="flex items-center gap-2"><i className="h-2.5 w-2.5 rounded-full border border-foreground" />Posição ideal</span>
@@ -234,14 +234,15 @@ function LogoTile({ brand, className }: { brand: Brand; className?: string }) {
   if (!logo) {
     const words = (brand.full || brand.name).replace(/\(.*?\)/g, "").split(/\s+/).filter(Boolean)
     const mono = brand.name.length <= 3 ? brand.name : words.slice(0, 2).map((w) => w[0]).join("").toUpperCase()
-    return <span className={cn("grid shrink-0 place-items-center rounded-xl bg-secondary font-semibold text-foreground", className)}>{mono}</span>
+    return <span className={cn("grid shrink-0 place-items-center rounded-xl bg-secondary font-normal text-foreground", className)}>{mono}</span>
   }
   return (
     <span
       className={cn("grid shrink-0 place-items-center overflow-hidden rounded-xl", brand.cat === "nu" && "ring-1 ring-nu-light", className)}
-      style={{ background: logo.bg, padding: `${logo.pad * 100}%` }}
+      style={{ background: logo.bg }}
     >
-      <img src={logo.src} alt={`Logo ${brand.name}`} className="h-full w-full object-contain" />
+      {/* inset relative to the tile itself (percentage padding would resolve against the parent's width) */}
+      <img src={logo.src} alt={`Logo ${brand.name}`} className="object-contain" style={{ width: `${100 - logo.pad * 200}%`, height: `${100 - logo.pad * 200}%` }} />
     </span>
   )
 }
@@ -251,7 +252,7 @@ function Meter({ label, value, ideal, lo, hi }: { label: string; value: number; 
     <div className="grid gap-2">
       <div className="flex justify-between text-[11px] text-muted-foreground">
         <span>{label}</span>
-        <b className="font-mono font-medium tabular-nums text-foreground">{fmt(value)}</b>
+        <b className="font-mono font-normal tabular-nums text-foreground">{fmt(value)}</b>
       </div>
       <div className="relative h-1 rounded-full bg-secondary">
         <span className="absolute -bottom-1 -top-1 left-1/2 w-px bg-foreground/20" />
@@ -272,7 +273,7 @@ function Paras({ paras }: { paras?: string[] }) {
 function SectionHead({ title, n }: { title: string; n: number }) {
   return (
     <div className="flex items-baseline justify-between">
-      <h3 className="font-display text-[15px] font-semibold tracking-tight">{title}</h3>
+      <h3 className="font-display text-[15px] font-normal tracking-tight">{title}</h3>
       <span className="font-mono text-[10px] text-muted-foreground/70">slide {n}</span>
     </div>
   )
@@ -325,7 +326,7 @@ function BrandPanel({ brand, onStep }: { brand: Brand; onStep: (d: number) => vo
                 {brand.cat !== "ideal" && <Badge variant="secondary" className="font-normal">{quadrant(brand)}</Badge>}
               </div>
             </div>
-            <SheetTitle className="text-balance font-display text-[32px] font-semibold leading-[1.05] tracking-[-0.025em]">{brand.full ?? brand.name}</SheetTitle>
+            <SheetTitle className="text-balance font-display text-[34px] font-normal leading-[1.04] tracking-[-0.03em]">{brand.full ?? brand.name}</SheetTitle>
             {intro?.lead ? (
               <SheetDescription className="text-pretty font-display text-lg leading-snug tracking-[-0.01em] text-foreground">{intro.lead}</SheetDescription>
             ) : (
@@ -342,7 +343,7 @@ function BrandPanel({ brand, onStep }: { brand: Brand; onStep: (d: number) => vo
                   <Separator />
                   <div className="flex items-baseline justify-between text-xs text-muted-foreground">
                     <span>Distância até a posição ideal<br /><span className="text-muted-foreground/60">{rank + 1}ª mais próxima de {RANKED.length}</span></span>
-                    <b className="font-mono text-xl font-medium tabular-nums text-foreground">{dist(brand).toFixed(2)}</b>
+                    <b className="font-mono text-xl font-normal tabular-nums text-foreground">{dist(brand).toFixed(2)}</b>
                   </div>
                 </>
               )}
@@ -352,7 +353,7 @@ function BrandPanel({ brand, onStep }: { brand: Brand; onStep: (d: number) => vo
           {para && (
             <Card className="border-nu-light/30 bg-gradient-to-br from-primary/30 to-primary/5 shadow-none">
               <CardContent className="grid gap-2 p-5">
-                <p className="text-[11px] font-medium uppercase tracking-[0.14em] text-nu-light">Para a Nu Asset</p>
+                <p className="text-[11px] font-normal uppercase tracking-[0.14em] text-nu-light">Para a Nu Asset</p>
                 <p className="text-sm leading-relaxed">{para}</p>
               </CardContent>
             </Card>
@@ -410,7 +411,7 @@ function BrandPanel({ brand, onStep }: { brand: Brand; onStep: (d: number) => vo
 function Terms({ label, terms }: { label?: string; terms: string[] }) {
   return (
     <div className="grid gap-2">
-      <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-muted-foreground">{label ?? "Termos-chave"}</p>
+      <p className="text-[11px] font-normal uppercase tracking-[0.12em] text-muted-foreground">{label ?? "Termos-chave"}</p>
       <div className="flex flex-wrap gap-1.5">{terms.map((t) => <Badge key={t} variant="outline" className="font-normal">{t}</Badge>)}</div>
     </div>
   )
@@ -419,7 +420,7 @@ function Terms({ label, terms }: { label?: string; terms: string[] }) {
 function HighlightList({ title, tone, items }: { title: string; tone: "positive" | "opportunity"; items: string[] }) {
   return (
     <div className="grid min-w-0 content-start gap-2">
-      <p className={cn("flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-[0.1em]", tone === "positive" ? "text-positive" : "text-opportunity")}>
+      <p className={cn("flex items-center gap-1.5 text-[11px] font-normal uppercase tracking-[0.1em]", tone === "positive" ? "text-positive" : "text-opportunity")}>
         <i className={cn("h-1.5 w-1.5 rounded-full", tone === "positive" ? "bg-positive" : "bg-opportunity")} />{title}
       </p>
       <ul className="grid gap-2">

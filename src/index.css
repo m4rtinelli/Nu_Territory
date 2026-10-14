@@ -1,3 +1,11 @@
+@font-face {
+  font-family: "Nu Sans Text";
+  src: url("/fonts/NuSansText-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -35,7 +43,10 @@
   html, body, #root { height: 100%; }
   body {
     @apply bg-background text-foreground font-sans antialiased overflow-hidden;
+    /* one weight only: never fake bold or italic */
+    font-synthesis: none;
   }
+  .font-mono { font-feature-settings: "tnum" 1, "zero" 1; }
 }
 
 @layer components {

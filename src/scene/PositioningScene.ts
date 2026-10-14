@@ -209,10 +209,16 @@ export class PositioningScene {
       rr(); g.fillStyle = b.cat === "nu" ? "#2a0c45" : "#141118"; g.fill()
       const words = (b.full || b.name).replace(/\(.*?\)/g, "").split(/\s+/).filter((w) => /^[A-ZÀ-Ú0-9]/i.test(w))
       const mono = b.name.length <= 3 ? b.name : words.slice(0, 2).map((w) => w[0]).join("").toUpperCase()
-      g.fillStyle = "#f5f3f8"; g.textAlign = "center"; g.textBaseline = "middle"
-      g.font = `600 ${mono.length > 2 ? 150 : 190}px -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif`
-      g.fillText(mono, S / 2, S / 2 + 8)
-      finish()
+      const font = `400 ${mono.length > 2 ? 160 : 200}px "Nu Sans Text", -apple-system, "Helvetica Neue", Arial, sans-serif`
+      const draw = () => {
+        rr(); g.fillStyle = b.cat === "nu" ? "#2a0c45" : "#141118"; g.fill()
+        g.fillStyle = "#f5f3f8"; g.textAlign = "center"; g.textBaseline = "middle"; g.font = font
+        g.fillText(mono, S / 2, S / 2 + 8)
+        finish()
+      }
+      draw()
+      // redraw once the brand face has loaded so monograms use Nu Sans
+      document.fonts?.load(font).then(draw, () => {})
     }
     return tex
   }

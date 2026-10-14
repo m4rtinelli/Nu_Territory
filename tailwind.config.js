@@ -6,9 +6,11 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["-apple-system", "BlinkMacSystemFont", "SF Pro Text", "Helvetica Neue", "Arial", "sans-serif"],
-        display: ["-apple-system", "BlinkMacSystemFont", "SF Pro Display", "Helvetica Neue", "Arial", "sans-serif"],
-        mono: ["SF Mono", "ui-monospace", "Menlo", "monospace"],
+        // Nu Sans Text (Nubank). Only the Regular cut is available, so hierarchy comes from size and tracking.
+        sans: ["Nu Sans Text", "-apple-system", "BlinkMacSystemFont", "Helvetica Neue", "Arial", "sans-serif"],
+        display: ["Nu Sans Text", "-apple-system", "BlinkMacSystemFont", "Helvetica Neue", "Arial", "sans-serif"],
+        // figures use Nu Sans tabular numerals instead of a monospace face
+        mono: ["Nu Sans Text", "-apple-system", "BlinkMacSystemFont", "Helvetica Neue", "Arial", "sans-serif"],
       },
       colors: {
         border: "hsl(var(--border))",

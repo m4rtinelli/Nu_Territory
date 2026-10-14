@@ -11,7 +11,7 @@ Every brand on the chart is clickable and opens its brand bench (slides 150–26
 - Filters (Todos / Bancos / Gestoras), search (`/` or ⌘K), ← → to step through brands, Esc to close.
 - Selection is part of the URL: each brand has a hash (`#itau-asset`), the browser Back button or gesture closes the panel, and a link with a hash opens that brand directly. Closing never calls `history.back()`, because inside an embedding viewer that could navigate the host page.
 
-The scene renders on demand: with no input it draws nothing and stays still.
+The scene repaints every frame while the page is visible but nothing moves without input, so it stays still and the canvas is never left blank.
 
 ## Data
 

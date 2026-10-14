@@ -74,6 +74,8 @@ export class PositioningScene {
   private dragging = false
   private reduce = matchMedia("(prefers-reduced-motion: reduce)").matches
   private lastT = 0
+  private disposed = false
+  private reported = false
   private panelPx = 0
   private disposers: (() => void)[] = []
 
@@ -157,6 +159,7 @@ export class PositioningScene {
     this.invalidate()
   }
   dispose() {
+    this.disposed = true
     cancelAnimationFrame(this.raf)
     this.disposers.forEach((d) => d())
     this.renderer.dispose()
@@ -432,11 +435,22 @@ export class PositioningScene {
   }
 
   // ---------- render loop (on demand: stops when everything has settled) ----------
+  // The scene repaints every animation frame while the page is visible. Nothing moves without input, so
+  // it stays still, but the canvas is never left blank if the browser drops its last frame (this happened
+  // on real GPUs when the blurred side panel closed over a render-on-demand canvas).
   invalidate() {
-    if (!this.raf) this.raf = requestAnimationFrame(() => this.frame())
+    if (!this.raf && !this.disposed) this.raf = requestAnimationFrame(() => this.tick())
+  }
+  private tick() {
+    this.raf = 0
+    try {
+      this.frame()
+    } catch (err) {
+      if (!this.reported) { this.reported = true; console.error("[PositioningScene] frame failed", err) }
+    }
+    this.invalidate()
   }
   private frame() {
-    this.raf = 0
     // time-based easing, so the motion takes the same time on slow and fast devices
     const now = performance.now()
     const dt = this.lastT ? Math.min((now - this.lastT) / 1000, 0.1) : 1 / 60
@@ -444,7 +458,6 @@ export class PositioningScene {
     const k = this.reduce ? 1 : 1 - Math.exp(-dt * 6.5)
     const ks = this.reduce ? 1 : 1 - Math.exp(-dt * 14)
     const r = this.rig
-    const before = [r.theta, r.phi, r.r, r.target.x, r.target.y, r.target.z, this.depthMorph, this.lookMorph, this.layoutMorph]
     r.theta = approach(r.theta, r.tTheta, k); r.phi = approach(r.phi, r.tPhi, k); r.r = approach(r.r, r.tR, k)
     r.target.lerp(r.tTarget, k); if (r.target.distanceTo(r.tTarget) < 1e-4) r.target.copy(r.tTarget)
     this.depthMorph = approach(this.depthMorph, this.tDepth, k)
@@ -475,14 +488,12 @@ export class PositioningScene {
     const chartVis = 1 - lm
     this.chartMats.forEach((c) => { c.mat.opacity = c.base * chartVis * (c.depth ? dm : 1); c.mat.visible = c.mat.opacity > 0.004 })
 
-    let scaleMoving = false
     for (const n of this.nodes) {
       const vis = this.visible(n), active = this.selected === n || this.hot === n
       const pos = this.nodePosition(n, dm, lm)
       n.group.position.copy(pos)
       const target = (active ? (lk ? 1.18 : 1.5) : 1) * (vis ? 1 : 0.6)
       const ns = approach(n.scale, target, ks)
-      if (ns !== n.scale) scaleMoving = true
       n.scale = ns
       const p = n.stem.geometry.attributes.position as THREE.BufferAttribute
       p.setXYZ(0, n.map.x, n.map.y, 0); p.setXYZ(1, n.map.x, n.map.y, n.z * dm); p.needsUpdate = true
@@ -543,10 +554,6 @@ export class PositioningScene {
 
     this.renderer.render(this.scene, cam)
 
-    const after = [r.theta, r.phi, r.r, r.target.x, r.target.y, r.target.z, this.depthMorph, this.lookMorph, this.layoutMorph]
-    const moving = scaleMoving || before.some((v, i) => Math.abs(v - after[i]) > 1e-5) || this.dragging
-    if (moving) this.invalidate()
-    else this.lastT = 0
   }
 
   private project(v: THREE.Vector3, el: HTMLElement, align: "l" | "c" | "r", dx: number, dy: number) {

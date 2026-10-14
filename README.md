@@ -26,7 +26,7 @@ Theme tokens live in `src/index.css` (Nu purple `#820AD1` on black).
 ## Typeface
 
 The UI is set in **Nu Sans Text** (Nubank, Regular cut only; hierarchy comes from size and tracking, `font-synthesis: none` prevents fake bold).
-The font file is proprietary and is **not committed**. Place it at `public/fonts/NuSansText-Regular.woff2` before running; without it the page falls back to the system sans.
+The font file lives at `public/fonts/NuSansText-Regular.woff2`. It is Nubank's proprietary typeface, included here with the project owner's approval; do not reuse it outside this project.
 
 ```bash
 npm install

@@ -3,5 +3,3 @@ dist/
 .DS_Store
 *.log
 
-# Proprietary Nubank typeface: supply locally, do not commit
-public/fonts/

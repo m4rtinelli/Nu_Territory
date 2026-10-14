@@ -25,11 +25,6 @@ const RANKED = BRANDS.filter((b) => b.cat !== "ideal").sort((a, b) => dist(a) - 
 const CAT_DOT: Record<Brand["cat"], string> = { bank: "bg-bank", manager: "bg-manager", nu: "bg-nu-light", ideal: "bg-foreground" }
 const fmt = (v: number) => (v >= 0 ? "+" : "−") + Math.abs(v).toFixed(2)
 const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase()
-// URL hash per brand (letters, digits and dashes only, so it survives the artifact viewer)
-const slug = (id: string) => norm(id).replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")
-const BY_SLUG = new Map(BRANDS.map((b) => [slug(b.id), b.id]))
-const fromHash = () => BY_SLUG.get(decodeURIComponent(location.hash.slice(1))) ?? null
-const urlWithout = () => location.pathname + location.search
 
 function useIsNarrow() {
   const [narrow, setNarrow] = useState(() => innerWidth < 720)
@@ -46,28 +41,21 @@ export default function App() {
   const labelsRef = useRef<HTMLDivElement>(null)
   const tipRef = useRef<HTMLDivElement>(null)
   const sceneRef = useRef<PositioningScene | null>(null)
-  const [selected, setSelected] = useState<string | null>(fromHash)
+  const [selected, setSelected] = useState<string | null>(null)
 
-  // Selection lives in the URL hash: opening a brand from the closed state pushes one entry and moving
-  // between brands replaces it, so Back closes the panel. Closing never calls history.back(): inside the
-  // artifact viewer the joint history also holds the host page's entries, and going back could navigate it.
+  // Browser Back closes the panel: opening a brand adds one history entry with the same URL (no hash, so
+  // the artifact viewer has nothing to mirror) and Back pops it. Nothing here ever calls history.back().
   const open = (id: string) => {
-    const url = `#${slug(id)}`
-    if (history.state?.nuPanel) history.replaceState({ nuPanel: true }, "", url)
-    else history.pushState({ nuPanel: true }, "", url)
+    if (!history.state?.nuPanel) history.pushState({ nuPanel: true }, "")
     setSelected(id)
   }
-  const close = () => {
-    if (location.hash) history.replaceState(null, "", urlWithout())
-    setSelected(null)
-  }
+  const close = () => setSelected(null)
   const openRef = useRef(open); openRef.current = open
   const closeRef = useRef(close); closeRef.current = close
   useEffect(() => {
-    const sync = () => setSelected(fromHash())
-    addEventListener("popstate", sync)
-    addEventListener("hashchange", sync)
-    return () => { removeEventListener("popstate", sync); removeEventListener("hashchange", sync) }
+    const onPop = () => { if (!history.state?.nuPanel) setSelected(null) }
+    addEventListener("popstate", onPop)
+    return () => removeEventListener("popstate", onPop)
   }, [])
   const [projection, setProjection] = useState<Projection>("3d")
   const [look, setLook] = useState<Look>("dots")

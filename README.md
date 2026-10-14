@@ -9,7 +9,7 @@ Every brand on the chart is clickable and opens its brand bench (slides 150–26
 - **Mapa / Galeria** (logos only): tiles at their exact chart positions, or a curved 3D gallery ordered from complex to simple.
 - **3D / Vista do slide**: depth separates Brazilian and global brands; the slide view is the flat front view identical to slide 149.
 - Filters (Todos / Bancos / Gestoras), search (`/` or ⌘K), ← → to step through brands, Esc to close.
-- Selection is part of the URL: each brand has a hash (`#itau-asset`), the browser Back button or gesture closes the panel, and a link with a hash opens that brand directly. Closing never calls `history.back()`, because inside an embedding viewer that could navigate the host page.
+- Browser Back (button or gesture) closes the brand panel without leaving the page.
 
 The scene repaints every frame while the page is visible but nothing moves without input, so it stays still and the canvas is never left blank.
 

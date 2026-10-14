@@ -50,7 +50,9 @@
 }
 
 @layer components {
-  .glass { @apply bg-card/70 backdrop-blur-xl backdrop-saturate-150; }
+  /* Solid surfaces on purpose: a backdrop-filter blur over the WebGL canvas made Chrome drop frames
+     (black canvas) and stall input on real GPUs. */
+  .glass { @apply bg-card/95; }
   .scene-label {
     position: absolute; left: 0; top: 0; white-space: nowrap; pointer-events: none;
     font-size: 11px; letter-spacing: .01em; color: hsl(var(--muted-foreground));

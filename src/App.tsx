@@ -336,6 +336,7 @@ function BrandPanel({ brand, onStep }: { brand: Brand; onStep: (d: number) => vo
               <LogoTile brand={brand} className="h-16 w-16 rounded-2xl text-lg" />
               <div className="flex min-w-0 flex-wrap gap-1.5">
                 <Badge variant="secondary" className="font-normal"><i className={cn("h-1.5 w-1.5 rounded-full", CAT_DOT[brand.cat])} />{CAT_LABEL[brand.cat]}</Badge>
+                {brand.bankArm && <Badge variant="secondary" className="font-normal">Gestora de banco</Badge>}
                 {brand.cat !== "ideal" && <Badge variant="secondary" className="font-normal">{brand.origin === "global" ? "Global" : "Brasil"}</Badge>}
                 {brand.cat !== "ideal" && <Badge variant="secondary" className="font-normal">{quadrant(brand)}</Badge>}
               </div>

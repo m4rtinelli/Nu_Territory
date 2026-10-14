@@ -22,6 +22,8 @@ export type Brand = {
   y: number
   origin: "br" | "global"
   cat: Category
+  /** asset manager that belongs to a bank group (e.g. Itaú Asset) */
+  bankArm?: boolean
   range?: [number, number]
   slides?: Slide[]
 }

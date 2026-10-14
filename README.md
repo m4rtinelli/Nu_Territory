@@ -17,7 +17,7 @@ The scene repaints every frame while the page is visible but nothing moves witho
 
 - `src/data/brands.json`: positions read from the slide's element coordinates via the Google Slides API (normalised to −1…1 on each axis) plus the bench text.
 - `src/data/logos.ts`: logos embedded as data URIs, from the MIT-licensed npm packages `logos-bancos-br` (Banco Central / Open Finance sources) and `@thesvg/icons`. Brands without a logo file render as a monogram tile.
-- Bank vs. asset-manager classification and the Brasil/Global depth axis are editorial choices, not read from the slide.
+- Bank vs. asset-manager classification and the Brasil/Global depth axis are editorial choices, not read from the slide. Bank-owned asset managers (Itaú Asset, BB Asset, Santander Asset, Inter Asset, Carbon Asset, J.P. Morgan AM, Goldman Sachs AM, Morgan Stanley IM) count as managers and carry `bankArm: true`; only BTG Pactual, Bradesco and UBS remain banks.
 
 ## Stack
 

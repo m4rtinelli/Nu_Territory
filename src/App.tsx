@@ -73,10 +73,10 @@ export default function App() {
     sceneRef.current?.setPanelOffset(selected && !narrow ? 460 : 0)
     sceneRef.current?.select(selected)
   }, [selected, narrow])
-  useEffect(() => sceneRef.current?.setProjection(projection), [projection])
-  useEffect(() => sceneRef.current?.setLook(look), [look])
-  useEffect(() => sceneRef.current?.setLayout(layout), [layout])
-  useEffect(() => sceneRef.current?.setFilter(filter), [filter])
+  useEffect(() => { sceneRef.current?.setProjection(projection) }, [projection])
+  useEffect(() => { sceneRef.current?.setLook(look) }, [look])
+  useEffect(() => { sceneRef.current?.setLayout(layout) }, [layout])
+  useEffect(() => { sceneRef.current?.setFilter(filter) }, [filter])
 
   const step = (dir: number) => {
     const i = selected ? ORDER.findIndex((b) => b.id === selected) : -1
@@ -295,7 +295,9 @@ function SectionHead({ title, n }: { title: string; n: number }) {
 
 function BrandPanel({ brand, onStep }: { brand: Brand; onStep: (d: number) => void }) {
   const viewport = useRef<HTMLDivElement>(null)
-  useEffect(() => viewport.current?.scrollTo({ top: 0 }), [brand.id])
+  // block body on purpose: in current Chrome scrollTo returns a Promise, and an effect that returns it
+  // makes React call it as a cleanup function, crash and unmount the whole page (black screen)
+  useEffect(() => { viewport.current?.scrollTo({ top: 0 }) }, [brand.id])
   const slides = brand.slides ?? []
   const intro = slides.find((s) => s.type === "intro")
   const para = slides.map((s) => s.para).find(Boolean)
